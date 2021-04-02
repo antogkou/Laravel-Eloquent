@@ -60,6 +60,25 @@ class EloquentTest extends TestCase
         $post->tags()->detach($firstTag);
         $this->assertDatabaseMissing('post_tag', ['tag_id' => $firstTag->id]);
         $this->assertDatabaseHas('post_tag', ['tag_id' => $secondTag->id]);
+    }
+
+    public function test_can_see_tags_on_posts()
+    {
+        $post = Post::factory()
+            ->hasAttached(Tag::factory()->count(3))
+            ->create();
+        $this->assertDatabaseHas('post_tag', ['post_id' => $post->id]);
+        $this->assertDatabaseCount('post_tag', 3);
+    }
+
+    public function test_when_post_gets_deleted_pivot_cascades()
+    {
+        $post = Post::factory()
+            ->hasAttached(Tag::factory()->count(3))
+            ->create();
+        $this->assertDatabaseCount('post_tag', 3);
         
+        $post->delete();
+        $this->assertDatabaseCount('post_tag', 0);
     }
 }
