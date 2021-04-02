@@ -60,5 +60,6 @@ class EloquentTest extends TestCase
         $post->tags()->detach($firstTag);
         $this->assertDatabaseMissing('post_tag', ['tag_id' => $firstTag->id]);
         $this->assertDatabaseHas('post_tag', ['tag_id' => $secondTag->id]);
+        
     }
 }
