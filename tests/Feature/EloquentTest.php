@@ -13,12 +13,8 @@ use Tests\TestCase;
 class EloquentTest extends TestCase
 {
     use RefreshDatabase;
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
-    public function test_user_can_create_a_post()
+
+    public function test_user_can_create_a_post(): void
     {
         $user = User::factory()->create();
         $post = Post::factory()->create(['user_id' => $user->id]);
@@ -27,7 +23,7 @@ class EloquentTest extends TestCase
         $this->assertDatabaseHas('posts', ['user_id' => $user->id]);
     }
 
-    public function test_user_posts_deleted_if_user_is_deleted()
+    public function test_user_posts_deleted_if_user_is_deleted(): void
     {
         $user = User::factory()->create();
         $post = Post::factory()->create(['user_id' => $user->id]);
@@ -42,7 +38,7 @@ class EloquentTest extends TestCase
         $this->assertDatabaseHas('posts', ['id' => $anotherUserPost->id]);
     }
 
-    public function test_post_can_have_tags()
+    public function test_post_can_have_tags(): void
     {
         $tag = Tag::factory()->create();
         $post = Post::factory()->create();
@@ -52,7 +48,7 @@ class EloquentTest extends TestCase
         $this->assertDatabaseHas('post_tag', ['tag_id' => $tag->id]);
     }
 
-    public function test_tag_can_be_removed_from_post()
+    public function test_tag_can_be_removed_from_post(): void
     {
         $firstTag = Tag::factory()->create();
         $secondTag = Tag::factory()->create();
@@ -60,7 +56,7 @@ class EloquentTest extends TestCase
 
         $post->tags()->attach([$firstTag->id, $secondTag->id]);
         $this->assertDatabaseHas('post_tag', ['tag_id' => $firstTag->id]);
-        
+
         $post->tags()->detach($firstTag);
         $this->assertDatabaseMissing('post_tag', ['tag_id' => $firstTag->id]);
         $this->assertDatabaseHas('post_tag', ['tag_id' => $secondTag->id]);
