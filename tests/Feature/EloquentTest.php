@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Affiliation;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
@@ -77,8 +78,24 @@ class EloquentTest extends TestCase
             ->hasAttached(Tag::factory()->count(3))
             ->create();
         $this->assertDatabaseCount('post_tag', 3);
-        
+
         $post->delete();
         $this->assertDatabaseCount('post_tag', 0);
+    }
+
+    public function test_get_users_with_left_affiliation()
+    {
+        $leftAffiliation = Affiliation::factory()->create(['name' => 'left']);
+        $this->assertDatabaseHas('affiliations', ['name' => 'left']);
+        $this->assertDatabaseCount('affiliations', 1);
+
+        $user = User::factory()->create(['name' => 'Antonis', 'affiliation_id' => 1]);
+        $this->assertDatabaseCount('users', 1);
+
+        $post = Post::factory()->count(3)->create(['user_id' => $user->id]);
+        $this->assertDatabaseCount('posts', 3);
+
+        $leftUsers = Affiliation::whereName('left')->first();
+        $this->assertNotEmpty($leftUsers);
     }
 }
