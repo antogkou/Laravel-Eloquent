@@ -45,4 +45,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(Post::class);
     }
+
+    public function likedPosts()
+    {
+        return $this->morphedByMany(Post::class, 'likable');
+    }
+
+    public function likedComments()
+    {
+        return $this->morphedByMany(Comment::class, 'likable');
+    }
 }

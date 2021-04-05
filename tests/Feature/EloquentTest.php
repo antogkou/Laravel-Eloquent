@@ -176,12 +176,30 @@ class EloquentTest extends TestCase
         $this->actingAs(User::factory()->create());
 
         $comment = Comment::factory()->create();
-
         $comment->like();
+
+        $userLikes = auth()->user()->likedComments;
+        $this->assertCount(1, $userLikes);
 
         $this->assertCount(1, $comment->likes);
         $this->assertTrue($comment->likes->contains('id', auth()->id()));
     }
 
+    /** @test */
+    public function get_users_likes()
+    {
+        // assert that we can retrieve user's likes on comments
+        $this->actingAs(User::factory()->create());
+        $comment = Comment::factory()->create();
+        $comment->like();
+        $commentLikes = auth()->user()->likedComments;
+        $this->assertCount(1, $commentLikes);
 
+        // assert that we can retrieve user's likes on posts
+        $this->actingAs(User::factory()->create());
+        $post = Post::factory()->create();
+        $post->like();
+        $postLikes = auth()->user()->likedPosts;
+        $this->assertCount(1, $postLikes);
+    }
 }
