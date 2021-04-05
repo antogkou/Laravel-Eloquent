@@ -2,14 +2,18 @@
 
 namespace App\Models;
 
-use App\Models\Tag;
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Post extends Model
 {
     use HasFactory;
+
+    public $fillable = [
+        'user_id',
+        'body',
+        'title'
+    ];
 
     public function user()
     {

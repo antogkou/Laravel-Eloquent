@@ -2,12 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\Affiliation;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class EloquentTest extends TestCase
@@ -77,8 +76,50 @@ class EloquentTest extends TestCase
             ->hasAttached(Tag::factory()->count(3))
             ->create();
         $this->assertDatabaseCount('post_tag', 3);
-        
+
         $post->delete();
         $this->assertDatabaseCount('post_tag', 0);
+    }
+
+    public function test_get_users_with_left_affiliation()
+    {
+        $leftAffiliation = Affiliation::factory()->create(['name' => 'left']);
+        $this->assertDatabaseHas('affiliations', ['name' => 'left']);
+        $this->assertDatabaseCount('affiliations', 1);
+
+        $user = User::factory()->create(['name' => 'Antonis', 'affiliation_id' => 1]);
+        $this->assertDatabaseCount('users', 1);
+
+        $post = Post::factory()->count(3)->create(['user_id' => $user->id]);
+        $this->assertDatabaseCount('posts', 3);
+
+        $leftAffiliation = Affiliation::whereName('left')->first();
+        $users = User::where('affiliation_id', '1')->get();
+        $this->assertNotEmpty($leftAffiliation);
+    }
+
+    public function test_get_posts_with_right_or_left_affiliation()
+    {
+        $leftAffiliation = Affiliation::factory()->create(['name' => 'left']);
+        $rightAffiliation = Affiliation::factory()->create(['name' => 'right']);
+        $this->assertDatabaseHas('affiliations', ['name' => 'left']);
+        $this->assertDatabaseHas('affiliations', ['name' => 'right']);
+        $this->assertDatabaseCount('affiliations', 2);
+
+        $user = User::factory()->create(['name' => 'Antonis', 'affiliation_id' => 1]);
+        $secondUser = User::factory()->create(['name' => 'Notis', 'affiliation_id' => 2]);
+        $this->assertDatabaseCount('users', 2);
+
+        $post = Post::factory()->count(3)->create(['user_id' => $user->id]);
+        $secondUserPosts = Post::factory()->count(5)->create(['user_id' => $secondUser->id]);
+        $this->assertDatabaseCount('posts', 8);
+
+        $rightAffiliation =  Affiliation::whereName('right')->first();
+        $rightPosts = $rightAffiliation->posts;
+        $this->assertNotEmpty($rightPosts);
+
+        $leftAffiliation =  Affiliation::whereName('right')->first();
+        $leftPosts = $leftAffiliation->posts;
+        $this->assertNotEmpty($leftPosts);
     }
 }
