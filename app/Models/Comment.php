@@ -5,25 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Post extends Model
+class Comment extends Model
 {
     use HasFactory;
-
-    public $fillable = [
-        'user_id',
-        'body',
-        'title'
-    ];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function tags()
-    {
-        return $this->belongsToMany(Tag::class)->withTimestamps();
-    }
 
     public function like($user = null)
     {
@@ -35,5 +19,4 @@ class Post extends Model
     {
         return $this->morphToMany(User::class, 'likable')->withTimestamps();
     }
-
 }

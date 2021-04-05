@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Affiliation;
 use App\Models\Collection;
+use App\Models\Comment;
 use App\Models\Post;
 use App\Models\Series;
 use App\Models\Tag;
@@ -154,6 +155,32 @@ class EloquentTest extends TestCase
         $this->assertNotEmpty($seriesParent);
 
         $this->assertDatabaseCount('videos', 3);
+    }
+
+    /** @test */
+    public function a_post_can_be_liked()
+    {
+        $this->actingAs(User::factory()->create());
+
+        $post = Post::factory()->create();
+
+        $post->like();
+
+        $this->assertCount(1, $post->likes);
+        $this->assertTrue($post->likes->contains('id', auth()->id()));
+    }
+
+    /** @test */
+    public function a_comment_can_be_liked()
+    {
+        $this->actingAs(User::factory()->create());
+
+        $comment = Comment::factory()->create();
+
+        $comment->like();
+
+        $this->assertCount(1, $comment->likes);
+        $this->assertTrue($comment->likes->contains('id', auth()->id()));
     }
 
 
