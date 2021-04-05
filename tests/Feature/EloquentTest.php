@@ -3,9 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Affiliation;
+use App\Models\Collection;
+use App\Models\Comment;
 use App\Models\Post;
+use App\Models\Series;
 use App\Models\Tag;
 use App\Models\User;
+use App\Models\Video;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -61,7 +65,7 @@ class EloquentTest extends TestCase
         $this->assertDatabaseHas('post_tag', ['tag_id' => $secondTag->id]);
     }
 
-    public function test_can_see_tags_on_posts()
+    public function test_can_see_tags_on_posts(): void
     {
         $post = Post::factory()
             ->hasAttached(Tag::factory()->count(3))
@@ -70,7 +74,7 @@ class EloquentTest extends TestCase
         $this->assertDatabaseCount('post_tag', 3);
     }
 
-    public function test_when_post_gets_deleted_pivot_cascades()
+    public function test_when_post_gets_deleted_pivot_cascades(): void
     {
         $post = Post::factory()
             ->hasAttached(Tag::factory()->count(3))
@@ -81,7 +85,7 @@ class EloquentTest extends TestCase
         $this->assertDatabaseCount('post_tag', 0);
     }
 
-    public function test_get_users_with_left_affiliation()
+    public function test_get_users_with_left_affiliation(): void
     {
         $leftAffiliation = Affiliation::factory()->create(['name' => 'left']);
         $this->assertDatabaseHas('affiliations', ['name' => 'left']);
@@ -98,7 +102,7 @@ class EloquentTest extends TestCase
         $this->assertNotEmpty($leftAffiliation);
     }
 
-    public function test_get_posts_with_right_or_left_affiliation()
+    public function test_get_posts_with_right_or_left_affiliation(): void
     {
         $leftAffiliation = Affiliation::factory()->create(['name' => 'left']);
         $rightAffiliation = Affiliation::factory()->create(['name' => 'right']);
@@ -114,12 +118,88 @@ class EloquentTest extends TestCase
         $secondUserPosts = Post::factory()->count(5)->create(['user_id' => $secondUser->id]);
         $this->assertDatabaseCount('posts', 8);
 
-        $rightAffiliation =  Affiliation::whereName('right')->first();
+        $rightAffiliation = Affiliation::whereName('right')->first();
         $rightPosts = $rightAffiliation->posts;
         $this->assertNotEmpty($rightPosts);
 
-        $leftAffiliation =  Affiliation::whereName('right')->first();
+        $leftAffiliation = Affiliation::whereName('right')->first();
         $leftPosts = $leftAffiliation->posts;
         $this->assertNotEmpty($leftPosts);
+    }
+
+    public function test_get_collection_videos(): void
+    {
+        $collectionVideos = Video::factory()->count(3)->for(
+            Collection::factory(), 'parent'
+        )->create();
+        $this->assertDatabaseCount('videos', 3);
+
+        $collection = Video::find(1);
+        $collectionParent = $collection->parent;
+
+        $this->assertNotEmpty($collectionParent);
+
+        $this->assertDatabaseCount('videos', 3);
+    }
+
+    public function test_get_series_videos(): void
+    {
+        $seriesVideos = Video::factory()->count(3)->for(
+            Series::factory(), 'parent'
+        )->create();
+        $this->assertDatabaseCount('videos', 3);
+
+        $series = Video::find(1);
+        $seriesParent = $series->parent;
+
+        $this->assertNotEmpty($seriesParent);
+
+        $this->assertDatabaseCount('videos', 3);
+    }
+
+    /** @test */
+    public function a_post_can_be_liked()
+    {
+        $this->actingAs(User::factory()->create());
+
+        $post = Post::factory()->create();
+
+        $post->like();
+
+        $this->assertCount(1, $post->likes);
+        $this->assertTrue($post->likes->contains('id', auth()->id()));
+    }
+
+    /** @test */
+    public function a_comment_can_be_liked()
+    {
+        $this->actingAs(User::factory()->create());
+
+        $comment = Comment::factory()->create();
+        $comment->like();
+
+        $userLikes = auth()->user()->likedComments;
+        $this->assertCount(1, $userLikes);
+
+        $this->assertCount(1, $comment->likes);
+        $this->assertTrue($comment->likes->contains('id', auth()->id()));
+    }
+
+    /** @test */
+    public function get_users_likes()
+    {
+        // assert that we can retrieve user's likes on comments
+        $this->actingAs(User::factory()->create());
+        $comment = Comment::factory()->create();
+        $comment->like();
+        $commentLikes = auth()->user()->likedComments;
+        $this->assertCount(1, $commentLikes);
+
+        // assert that we can retrieve user's likes on posts
+        $this->actingAs(User::factory()->create());
+        $post = Post::factory()->create();
+        $post->like();
+        $postLikes = auth()->user()->likedPosts;
+        $this->assertCount(1, $postLikes);
     }
 }

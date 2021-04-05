@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Post;
-use Doctrine\DBAL\Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -99,7 +99,7 @@ class PostController extends Controller
             $post->save();
             return redirect()->route('post.index')
                 ->with('success', 'Post updated successfully');
-        } catch (\Exception $ex) {
+        } catch (QueryException $ex) {
             return redirect()->route('post.index')
                 ->withErrors('error', 'Post not updated');
         }
@@ -108,7 +108,7 @@ class PostController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return RedirectResponse
      */
     public function destroy($id): RedirectResponse
@@ -118,9 +118,29 @@ class PostController extends Controller
             $post->delete();
             return redirect()->route('post.index')
                 ->with('success', 'Post deleted.');
-        } catch (Exception $ex) {
+        } catch (QueryException $ex) {
             return redirect()->route('post.index')
                 ->withErrors('error', 'Post not deleted');
+        }
+    }
+
+    public function like($id): RedirectResponse
+    {
+        try {
+            $user = auth()->user();
+            $post = Post::find($id);
+
+            if ($user->likedPosts->contains($post->id)) {
+                $post->unlike();
+                return redirect()->route('post.index')
+                    ->with('success', 'Post unliked!');
+            }
+            $post->like();
+            return redirect()->route('post.index')
+                ->with('success', 'Post liked!');
+        } catch (QueryException $ex) {
+            return redirect()->route('post.index')
+                ->withErrors(['Something went wrong', $ex->errorInfo]);
         }
     }
 }

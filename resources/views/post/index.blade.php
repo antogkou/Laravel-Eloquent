@@ -61,7 +61,7 @@
                 <p class="xl:font-extrabold">  {{ $post->title }}</p>
                 <p> {{ $post->body }} </p>
                 <p class="font-italic"> {{ $post->user->name }}</p>
-                <p> {{ $post->created_at }}</p>
+                <p> {{ $post->likes->count() }}</p>
               </li>
             </ul>
             <x-nav-link :href="route('post.edit', [$post->id])">
@@ -69,6 +69,9 @@
             </x-nav-link>
             <x-nav-link :href="route('post.show', [$post->id])">
               {{ __('show') }}
+            </x-nav-link>
+            <x-nav-link :href="route('post.like', [$post->id])">
+              {{ __('like') }}
             </x-nav-link>
             <form method="POST" action="/posts/{{$post->id}}">
               @csrf
@@ -79,9 +82,6 @@
                 </x-button>
               </div>
             </form>
-{{--            <x-nav-link :href="route('post.destroy', [$post->id])">--}}
-{{--              {{ __('delete') }}--}}
-{{--            </x-nav-link>--}}
           @endforeach
         </div>
       </div>
