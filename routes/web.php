@@ -18,19 +18,19 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard');
+    })->name('dashboard');
 
-Route::get('/posts/', function () {
-    return view('post.show');
-})->middleware(['auth'])->name('post.show');
+    Route::get('/posts', [PostController::class, 'index'])->name('post.index');
+    Route::get('/posts/{post}', [PostController::class, 'show'])->name('post.show');
+    Route::get('/post/create', [PostController::class, 'create'])->name('post.create');
+    Route::post('/posts', [PostController::class, 'store'])->name('post.store');
+    Route::get('/posts/{post}/edit', [PostController::class, 'edit'])->name('post.edit');
+    Route::put('/posts/{post}', [PostController::class, 'update'])->name('post.update');
+    Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('post.destroy');
+});
 
-Route::get('/posts/create', function () {
-    return view('post.create');
-})->middleware(['auth'])->name('post.create');
-
-Route::post('/posts', [PostController::class, 'store'])
-    ->middleware(['auth'])->name('post.store');
 
 require __DIR__ . '/auth.php';
