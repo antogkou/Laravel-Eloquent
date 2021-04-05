@@ -22,7 +22,7 @@ class SeriesFactory extends Factory
     public function definition()
     {
         return [
-            'title' => $this->faker->colorName,
+            'title' => $this->faker->colorName(),
             'description' => $this->faker->sentence(3),
         ];
     }
