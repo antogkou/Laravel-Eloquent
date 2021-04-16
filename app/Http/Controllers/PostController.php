@@ -14,6 +14,11 @@ use Illuminate\Routing\Redirector;
 
 class PostController extends Controller
 {
+    // public function __construct()
+    // {
+    //     $this->authorizeResource(Post::class, 'post');
+    // }
+
     /**
      * Display a listing of the resource.
      *
@@ -94,6 +99,7 @@ class PostController extends Controller
                 'body' => 'required|string|max:255',
             ]);
             $post = Post::find($id);
+            $this->authorize('update', $post);
             $post->body = $request->input('body');
             $post->title = $request->input('title');
             $post->save();

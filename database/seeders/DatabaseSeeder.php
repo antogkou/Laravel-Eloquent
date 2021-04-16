@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Post::factory()
-            ->count(8)
+            ->count(200)
             ->state(new Sequence(
                 fn() => ['user_id' => User::all()->random()],
             ))->create();
